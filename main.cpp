@@ -19,6 +19,11 @@ struct Chunk
 
 #pragma pack(pop)
 
+DWORD Reverse_DWord(DWORD in)
+{
+   return ((in>>24)&0x000000FF) | ((in>>8)&0x0000FF00) | ((in<<8)&0x00FF0000) | ((in<<24)&0xFF000000);
+}
+
 int main()
 {
     setlocale(LC_ALL, "Russian");
@@ -35,6 +40,20 @@ int main()
         png_file.read(png_data.data(), fileSize);
 
         size_t offset = 8;
+
+        while (offset + 8 <= png_data.size())
+        {
+            Chunk* ch = reinterpret_cast<Chunk*>(&png_data[offset]);
+            uint32_t Length = Reverse_DWord(ch->Length);
+
+            string Type(ch->Type, 4);
+
+            cout << "Chunk: " << Type << ", Size: " << Length << endl;
+
+            offset += 12 + Length;
+        }
+
+        cout << "File size: " << fileSize << endl;
     }
 
     return 0;
